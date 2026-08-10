@@ -57,6 +57,16 @@ export default async function DashboardPage() {
       : readinessScore >= 50
       ? "text-yellow-500"
       : "text-red-500";
+      
+  let progressData = null;
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/progress/${user.id}`, { cache: "no-store" });
+    if (res.ok) {
+      progressData = await res.json();
+    }
+  } catch (e) {
+    console.error("Failed to fetch progress", e);
+  }
 
   return (
     <main className="min-h-screen py-10 px-6">
@@ -235,6 +245,57 @@ export default async function DashboardPage() {
                         </li>
                       ))}
                     </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Progress Section */}
+            {progressData && progressData.scores && progressData.scores.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Score Trend */}
+                <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+                  <h3 className="text-xs text-muted-foreground uppercase tracking-widest mb-3">
+                    Mock Interview Performance
+                  </h3>
+                  <div className="flex items-end gap-2 h-32 pt-4">
+                    {progressData.scores.map((score: number, idx: number) => (
+                      <div key={idx} className="flex-1 flex flex-col items-center justify-end gap-2 group relative">
+                        {/* Tooltip */}
+                        <div className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-zinc-800 text-xs px-2 py-1 rounded transition-opacity">
+                          {score}%
+                        </div>
+                        <div 
+                          className={`w-full max-w-[40px] rounded-t-sm transition-all ${score >= 80 ? 'bg-green-500/80 hover:bg-green-500' : score >= 50 ? 'bg-yellow-500/80 hover:bg-yellow-500' : 'bg-red-500/80 hover:bg-red-500'}`} 
+                          style={{ height: `${score}%` }}
+                        />
+                        <span className="text-[10px] text-muted-foreground hidden sm:block">#{idx + 1}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground text-center">
+                    Average score trend across your last {progressData.scores.length} sessions.
+                  </p>
+                </div>
+                
+                {/* Weakness Radar */}
+                <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+                  <h3 className="text-xs text-muted-foreground uppercase tracking-widest text-red-500 mb-3">
+                    Weakness Radar
+                  </h3>
+                  <p className="text-sm text-muted-foreground">Topics you frequently miss across all interviews.</p>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    {progressData.weaknesses && progressData.weaknesses.length > 0 ? (
+                      progressData.weaknesses.map((w: any, idx: number) => (
+                        <div key={idx} className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-500 px-3 py-1.5 rounded-full text-sm">
+                          <span className="font-medium">{w.topic}</span>
+                          <span className="bg-red-500/20 text-red-400 text-xs px-1.5 rounded-full">{w.count} misses</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No recurring weaknesses detected yet.</p>
+                    )}
                   </div>
                 </div>
               </div>
