@@ -28,9 +28,9 @@ export default async function InterviewPage() {
 
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Interview Prep</h1>
+            <h1 className="text-2xl font-bold">Mock Interview Arena</h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Personalized questions generated from your resume and target role.
+              Test your knowledge against a strict AI interviewer before the real thing.
             </p>
           </div>
           <GenerateQuestionsButton

@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from supabase import create_client, Client
-from routers import resume, profile, interview, analysis, mock_interview, progress
+from routers import resume, profile, interview, analysis, mock_interview, progress, prepare
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -34,6 +34,7 @@ app.include_router(interview.router)
 app.include_router(analysis.router)
 app.include_router(mock_interview.router)
 app.include_router(progress.router)
+app.include_router(prepare.router)
 
 @app.get("/")
 def read_root():

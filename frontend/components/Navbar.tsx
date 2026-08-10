@@ -7,7 +7,8 @@ import { BrainCircuit } from "lucide-react";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/interview", label: "Interview Prep" },
+  { href: "/prepare", label: "Study Plan" },
+  { href: "/interview", label: "Mock Interview" },
   { href: "/profile", label: "Profile" },
 ];
 
