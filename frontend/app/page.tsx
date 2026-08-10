@@ -1,4 +1,4 @@
-import { ResumeUpload } from "@/components/resume-upload";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -12,8 +12,9 @@ export default function Home() {
           Stop practicing generic questions. Start preparing for what you will actually be asked.
         </p>
         
-        {/* Our new component! */}
-        <ResumeUpload />
+        <Link href="/dashboard" className="inline-block mt-4 px-6 py-3 bg-white text-black font-medium rounded-lg hover:bg-zinc-200 transition-colors">
+          Go to Dashboard →
+        </Link>
         
       </div>
     </main>
