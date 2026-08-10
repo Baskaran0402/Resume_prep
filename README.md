@@ -2,6 +2,30 @@
 
 An **AI-Powered Interview Intelligence Engine** that transforms how candidates prepare for technical interviews. Instead of generic question banks, InterviewIQ creates a closed learning loop: it analyzes your resume against a target job description, discovers your knowledge gaps, builds a custom study plan, and ruthlessly tests your limits in an adaptive AI mock interview.
 
+## 🏛️ System Architecture
+
+```mermaid
+flowchart TD
+    %% Core Inputs
+    A[PDF Resume] -->|Upload| C(Backend: Resume Parser)
+    B[Job Description] -->|Input| D(Backend: Gap Analysis Engine)
+    C --> D
+    
+    %% Analysis & Planning
+    D -->|Identifies Priorities & Gaps| E(Preparation Planner)
+    
+    %% Evaluation Loop
+    E -->|Generates Study Guide| F[Study Plan UI]
+    F -->|User Learns| G(Mock Interview Arena)
+    G -->|Interactive Q&A| H{LLM Evaluator}
+    
+    %% Feedback Loop
+    H -->|Scores < 60| I[Drop Difficulty L-1]
+    H -->|Scores > 80| J[Raise Difficulty L+1]
+    H -->|Extracts Missed Topics| K[(Progress & Weakness DB)]
+    K -.->|Feeds back into| E
+```
+
 ## 🚀 Features
 
 - **Resume Parsing & Skill Extraction:** Upload a PDF resume and automatically extract key skills, projects, and experiences.
