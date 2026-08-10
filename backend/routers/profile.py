@@ -14,7 +14,8 @@ class ProfileUpdate(BaseModel):
     user_id: str
     target_role: str
     experience_level: str
-    target_company: str
+    target_company: str = ""
+    job_description: str = ""
 
 @router.post("/update")
 async def update_profile(data: ProfileUpdate):
@@ -27,7 +28,8 @@ async def update_profile(data: ProfileUpdate):
             response = supabase.table("profiles").update({
                 "target_role": data.target_role,
                 "experience_level": data.experience_level,
-                "target_company": data.target_company
+                "target_company": data.target_company,
+                "job_description": data.job_description
             }).eq("id", data.user_id).execute()
         else:
             # Insert new profile
@@ -35,7 +37,8 @@ async def update_profile(data: ProfileUpdate):
                 "id": data.user_id,
                 "target_role": data.target_role,
                 "experience_level": data.experience_level,
-                "target_company": data.target_company
+                "target_company": data.target_company,
+                "job_description": data.job_description
             }).execute()
 
         return {

@@ -74,13 +74,17 @@ async def generate_analysis(request: GenerateRequest):
         CRITICAL RULES:
         1. A "Fresher" expects fundamentals. A "Senior" expects architecture, scale, and system design.
         2. Identify if they claim technologies in projects but don't list them in skills.
-        3. Prioritize missing core technologies for their role. (e.g., if AI/ML Engineer missing MLOps/Deployment).
+        3. Prioritize missing core technologies for their role.
+        4. If a JOB DESCRIPTION is provided, you MUST perform a Resume ↔ JD Match. Flag any explicitly required skills in the JD that are completely missing from the Resume as high-priority gaps.
         """
 
         user_content = f"""
         TARGET ROLE: {profile.get('target_role', 'Software Engineer')}
         EXPERIENCE LEVEL: {profile.get('experience_level', 'Mid-Level')}
         TARGET COMPANY: {profile.get('target_company', 'Any tech company')}
+        
+        JOB DESCRIPTION (If provided, match against this strictly):
+        {profile.get('job_description', 'Not provided - evaluate against general industry standards for the role')}
 
         CANDIDATE SKILLS EXTRACTED FROM RESUME:
         {', '.join(skills)}

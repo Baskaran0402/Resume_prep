@@ -32,17 +32,17 @@ export default function StartMockInterviewButton({ userId }: { userId: string })
     <button
       onClick={handleStart}
       disabled={isStarting}
-      className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-lg shadow-blue-900/20 disabled:opacity-50"
+      className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-60 flex-shrink-0"
     >
       {isStarting ? (
         <>
-          <Loader2 className="w-5 h-5 animate-spin" />
-          Starting Session...
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Starting...
         </>
       ) : (
         <>
-          <Play className="w-5 h-5 fill-current" />
-          Start New Mock Interview
+          <Play className="w-4 h-4 fill-current" />
+          Start Mock Interview
         </>
       )}
     </button>

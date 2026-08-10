@@ -55,6 +55,8 @@ async def start_interview(request: StartInterviewRequest):
         
         Based on the candidate's target role, experience level, and knowledge gaps/priorities, ask the FIRST interview question.
         
+        If a JOB DESCRIPTION is provided below, you MUST tailor your question to explicitly test skills or technologies mentioned in the JD.
+        
         Return exactly a JSON object:
         {{
           "question": "Your first interview question here"
@@ -68,6 +70,9 @@ async def start_interview(request: StartInterviewRequest):
         CANDIDATE PRIORITIES & GAPS:
         {json.dumps(analysis.get('priorities', []), indent=2)}
         {json.dumps(analysis.get('gaps', []), indent=2)}
+        
+        JOB DESCRIPTION:
+        {profile.get('job_description', 'Not provided')}
         """
 
         chat_completion = groq_client.chat.completions.create(
@@ -128,8 +133,10 @@ async def chat_interview(request: ChatMessageRequest):
         system_prompt = f"""
         You are an expert, STRICT, and highly objective AI Technical Interviewer.
         The candidate's Experience Level is: {profile.get('experience_level', 'Entry-Level/Junior')}.
+        The Target Company / Job Description is: {profile.get('job_description', 'Not provided')}
         
         You must rigorously evaluate the candidate's last answer and then ask the NEXT question.
+        If a Job Description is provided, explicitly tailor your next question to the technologies or responsibilities mentioned in it.
         
         SCORING RULES (CRITICAL):
         - DO NOT BE POLITE OR GENEROUS. Be a harsh, realistic interviewer.

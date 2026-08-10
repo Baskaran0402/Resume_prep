@@ -3,17 +3,14 @@ import { redirect } from "next/navigation";
 import ResumeUpload from "@/components/ResumeUpload";
 import Link from "next/link";
 import GenerateAnalysisButton from "./GenerateAnalysisButton";
+import { FileUp, Target, Layers, ChevronRight } from "lucide-react";
 
 export default async function DashboardPage() {
-  // Server-side auth check — if not logged in, send to login
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/auth/login");
-  }
+  if (!user) redirect("/auth/login");
 
-  // Fetch resume data
   const { data: resume } = await supabase
     .from("resumes")
     .select("*")
@@ -22,7 +19,6 @@ export default async function DashboardPage() {
     .limit(1)
     .maybeSingle();
 
-  // Fetch target role from profile
   const { data: profile } = await supabase
     .from("profiles")
     .select("target_role")
@@ -31,7 +27,6 @@ export default async function DashboardPage() {
 
   const targetRole = profile?.target_role || "Not set yet";
 
-  // Fetch gap analysis
   const { data: analysis } = await supabase
     .from("analysis_results")
     .select("*")
@@ -40,7 +35,6 @@ export default async function DashboardPage() {
     .limit(1)
     .maybeSingle();
 
-  // Fetch skill count if resume exists
   let skillsCount = 0;
   let projectsCount = 0;
   if (resume) {
@@ -48,137 +42,211 @@ export default async function DashboardPage() {
       .from("skills")
       .select("*", { count: "exact", head: true })
       .eq("resume_id", resume.id);
-      
     const { count: pCount } = await supabase
       .from("projects")
       .select("*", { count: "exact", head: true })
       .eq("resume_id", resume.id);
-      
     skillsCount = sCount || 0;
     projectsCount = pCount || 0;
   }
 
+  const readinessScore = analysis?.readiness_score;
+  const scoreColor =
+    readinessScore >= 80
+      ? "text-green-500"
+      : readinessScore >= 50
+      ? "text-yellow-500"
+      : "text-red-500";
+
   return (
-    <main className="flex min-h-screen flex-col bg-zinc-950 text-zinc-50">
-      <div className="max-w-5xl mx-auto w-full px-6 py-12 space-y-8">
-        
-        {/* Header */}
-        <div className="flex justify-between items-start">
-          <div className="space-y-1">
-            <p className="text-sm text-zinc-500">Welcome back 👋</p>
-            <h1 className="text-3xl font-bold text-zinc-50">Your Interview Dashboard</h1>
-            <p className="text-zinc-400 text-sm">{user.email}</p>
+    <main className="min-h-screen py-10 px-6">
+      <div className="max-w-5xl mx-auto space-y-8">
+
+        {/* Page header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p className="text-sm text-muted-foreground">Welcome back</p>
+            <h1 className="text-2xl font-bold mt-0.5">Dashboard</h1>
+            <p className="text-xs text-muted-foreground mt-1">{user.email}</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/interview" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
-              Interview Prep
-            </Link>
-            <Link href="/profile" className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors">
-              Edit Profile
-            </Link>
+          <Link
+            href="/interview"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors self-start sm:self-auto"
+          >
+            Interview Prep
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {/* Stats row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-card border border-border rounded-xl p-5 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground uppercase tracking-widest">Readiness Score</p>
+              <Target className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <p className={`text-4xl font-bold ${analysis ? scoreColor : "text-foreground"}`}>
+              {analysis ? `${readinessScore}%` : resume ? "—" : "—"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {analysis
+                ? "Based on role expectations"
+                : resume
+                ? "Generate analysis to see score"
+                : "Upload resume to get started"}
+            </p>
+          </div>
+
+          <div className="bg-card border border-border rounded-xl p-5 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground uppercase tracking-widest">Target Role</p>
+              <Layers className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <p className="text-xl font-bold truncate" title={targetRole}>
+              {targetRole}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {targetRole !== "Not set yet" ? (
+                <Link href="/profile" className="hover:underline text-primary">Edit in profile</Link>
+              ) : (
+                <Link href="/profile" className="hover:underline text-primary">Set your target role</Link>
+              )}
+            </p>
+          </div>
+
+          <div className="bg-card border border-border rounded-xl p-5 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground uppercase tracking-widest">Skills Extracted</p>
+              <FileUp className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <p className="text-4xl font-bold">{skillsCount}</p>
+            <p className="text-xs text-muted-foreground">
+              {resume ? `${projectsCount} projects detected` : "Upload a resume first"}
+            </p>
           </div>
         </div>
 
-        {/* Dashboard Content */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-2">
-            <p className="text-xs text-zinc-500 uppercase tracking-widest">Readiness Score</p>
-            <p className="text-4xl font-bold text-zinc-50">{analysis ? `${analysis.readiness_score}%` : (resume ? "Pending" : "—")}</p>
-            <p className="text-xs text-zinc-600">{analysis ? "Based on role expectations" : (resume ? "We are generating your score" : "Upload your resume to get started")}</p>
-          </div>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-2">
-            <p className="text-xs text-zinc-500 uppercase tracking-widest">Target Role</p>
-            <p className="text-2xl font-bold text-zinc-50 truncate" title={targetRole}>{targetRole}</p>
-            <p className="text-xs text-zinc-600">{targetRole !== "Not set yet" ? "From your profile" : "Not set yet"}</p>
-          </div>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-2">
-            <p className="text-xs text-zinc-500 uppercase tracking-widest">Skills Extracted</p>
-            <p className="text-2xl font-bold text-zinc-50">{skillsCount}</p>
-            <p className="text-xs text-zinc-600">{resume ? "Ready for technical review" : "Complete your profile first"}</p>
-          </div>
-        </div>
-
+        {/* Main content */}
         {!resume ? (
-          <div className="bg-zinc-900 border border-dashed border-zinc-700 rounded-xl p-10 text-center space-y-3">
-            <p className="text-zinc-300 font-medium">No resume uploaded yet</p>
-            <p className="text-zinc-500 text-sm">Upload your resume to generate your personalized interview preparation plan</p>
+          <div className="bg-card border border-dashed border-border rounded-xl p-12 text-center space-y-4">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
+              <FileUp className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">No resume uploaded yet</p>
+              <p className="text-muted-foreground text-sm mt-1">
+                Upload your PDF resume to generate a personalized interview preparation plan.
+              </p>
+            </div>
             <ResumeUpload userId={user.id} />
           </div>
         ) : (
           <div className="space-y-6">
             {!analysis && (
-              <div className="bg-blue-900/20 border border-blue-900/50 rounded-xl p-8 text-center space-y-4">
-                <h2 className="text-xl font-bold text-blue-100">Resume Analyzed ✅</h2>
-                <p className="text-blue-200/70 text-sm">We've extracted {skillsCount} skills and {projectsCount} projects. We are ready to generate your customized gap analysis.</p>
-                <div className="flex justify-center mt-4">
-                  <GenerateAnalysisButton userId={user.id} hasAnalysis={false} />
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-8 text-center space-y-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">Resume parsed successfully</h2>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Extracted {skillsCount} skills and {projectsCount} projects. Ready to generate your gap analysis.
+                  </p>
                 </div>
+                <GenerateAnalysisButton userId={user.id} hasAnalysis={false} />
               </div>
             )}
 
             {analysis && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Priorities */}
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-                  <h3 className="text-sm text-zinc-500 uppercase tracking-widest mb-4">Your Top Priorities</h3>
+                <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs text-muted-foreground uppercase tracking-widest">Top Priorities</h3>
+                    <GenerateAnalysisButton userId={user.id} hasAnalysis={true} />
+                  </div>
                   <div className="space-y-4">
                     {analysis.priorities?.map((p: any, idx: number) => (
-                      <div key={idx} className="flex flex-col space-y-1">
+                      <div key={idx} className="space-y-1.5">
                         <div className="flex justify-between items-center">
-                          <span className="font-medium text-zinc-200">{p.topic}</span>
-                          <span className={`text-xs px-2 py-1 rounded ${p.weight > 50 ? 'bg-red-500/20 text-red-400' : p.weight > 20 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400'}`}>
-                            {p.weight}% Focus
+                          <span className="text-sm font-medium text-foreground">{p.topic}</span>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full ${
+                              p.weight > 50
+                                ? "bg-red-500/10 text-red-500"
+                                : p.weight > 20
+                                ? "bg-yellow-500/10 text-yellow-500"
+                                : "bg-green-500/10 text-green-500"
+                            }`}
+                          >
+                            {p.weight}%
                           </span>
                         </div>
-                        <p className="text-xs text-zinc-500">{p.reason}</p>
+                        <p className="text-xs text-muted-foreground">{p.reason}</p>
+                        <div className="h-1 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${
+                              p.weight > 50 ? "bg-red-500" : p.weight > 20 ? "bg-yellow-500" : "bg-green-500"
+                            }`}
+                            style={{ width: `${p.weight}%` }}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
-                  <div className="mt-6 border-t border-zinc-800 pt-4 flex justify-between items-center">
-                    <span className="text-xs text-zinc-600">Want to regenerate?</span>
-                    <GenerateAnalysisButton userId={user.id} hasAnalysis={true} />
-                  </div>
                 </div>
 
-                {/* Analysis Breakdown */}
+                {/* Breakdown panels */}
                 <div className="space-y-4">
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-                    <h3 className="text-sm text-zinc-500 uppercase tracking-widest mb-4 text-red-400">Knowledge Gaps</h3>
-                    <ul className="list-disc list-inside space-y-2">
+                  <div className="bg-card border border-border rounded-xl p-5">
+                    <h3 className="text-xs text-muted-foreground uppercase tracking-widest mb-3 text-red-500">
+                      Knowledge Gaps
+                    </h3>
+                    <ul className="space-y-2">
                       {analysis.gaps?.map((gap: string, idx: number) => (
-                        <li key={idx} className="text-sm text-zinc-300">{gap}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-                    <h3 className="text-sm text-zinc-500 uppercase tracking-widest mb-4 text-yellow-400">Interview Risks</h3>
-                    <ul className="list-disc list-inside space-y-2">
-                      {analysis.risks?.map((risk: string, idx: number) => (
-                        <li key={idx} className="text-sm text-zinc-300">{risk}</li>
+                        <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                          {gap}
+                        </li>
                       ))}
                     </ul>
                   </div>
 
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-                    <h3 className="text-sm text-zinc-500 uppercase tracking-widest mb-4 text-green-400">Strengths</h3>
-                    <ul className="list-disc list-inside space-y-2">
-                      {analysis.strengths?.map((strength: string, idx: number) => (
-                        <li key={idx} className="text-sm text-zinc-300">{strength}</li>
+                  <div className="bg-card border border-border rounded-xl p-5">
+                    <h3 className="text-xs text-muted-foreground uppercase tracking-widest mb-3 text-yellow-500">
+                      Interview Risks
+                    </h3>
+                    <ul className="space-y-2">
+                      {analysis.risks?.map((risk: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-yellow-500 flex-shrink-0" />
+                          {risk}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="bg-card border border-border rounded-xl p-5">
+                    <h3 className="text-xs text-muted-foreground uppercase tracking-widest mb-3 text-green-500">
+                      Strengths
+                    </h3>
+                    <ul className="space-y-2">
+                      {analysis.strengths?.map((s: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
+                          {s}
+                        </li>
                       ))}
                     </ul>
                   </div>
                 </div>
               </div>
             )}
-            
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mt-8">
-              <p className="text-sm text-zinc-500 mb-3">Want to update your resume?</p>
+
+            {/* Resume update */}
+            <div className="bg-card border border-border rounded-xl p-5">
+              <p className="text-sm text-muted-foreground mb-3">Update your resume</p>
               <ResumeUpload userId={user.id} />
             </div>
           </div>
         )}
-
       </div>
     </main>
   );

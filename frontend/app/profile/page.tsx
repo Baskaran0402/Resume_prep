@@ -1,17 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import ProfileForm from "@/components/ProfileForm";
-import Link from "next/link";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/auth/login");
-  }
+  if (!user) redirect("/auth/login");
 
-  // Fetch existing profile data if any
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
@@ -19,26 +15,28 @@ export default async function ProfilePage() {
     .single();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 text-zinc-50 py-12 px-4">
-      <div className="w-full max-w-md space-y-8">
+    <main className="min-h-screen py-10 px-6">
+      <div className="max-w-lg mx-auto space-y-6">
         <div>
-          <Link href="/dashboard" className="text-zinc-500 hover:text-white transition-colors text-sm mb-6 inline-block">
-            ← Back to Dashboard
-          </Link>
-          <h1 className="text-3xl font-bold tracking-tight">Complete Your Profile</h1>
-          <p className="text-zinc-400 mt-2">
-            Tell us about your target role so we can generate tailored interview questions and score your resume accurately.
+          <h1 className="text-2xl font-bold">Profile</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Your target role details help us generate tailored questions and score your resume accurately.
           </p>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-          <ProfileForm 
-            userId={user.id} 
-            initialData={profile ? {
-              target_role: profile.target_role,
-              experience_level: profile.experience_level,
-              target_company: profile.target_company
-            } : undefined}
+        <div className="bg-card border border-border rounded-xl p-6">
+          <ProfileForm
+            userId={user.id}
+            initialData={
+              profile
+                ? {
+                    target_role: profile.target_role,
+                    experience_level: profile.experience_level,
+                    target_company: profile.target_company,
+                    job_description: profile.job_description,
+                  }
+                : undefined
+            }
           />
         </div>
       </div>

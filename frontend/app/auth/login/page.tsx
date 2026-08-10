@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { BrainCircuit, Loader2 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -25,61 +26,79 @@ export default function LoginPage() {
       setError(error.message);
       setLoading(false);
     } else {
-      router.push("/dashboard"); // Redirect after login
+      router.push("/dashboard");
     }
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-950">
-      <div className="w-full max-w-sm px-6 py-10 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-6">
-        
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl font-bold text-zinc-50">Welcome back</h1>
-          <p className="text-sm text-zinc-400">Sign in to your account</p>
-        </div>
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-zinc-400">Email</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-zinc-400">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-100 text-sm placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {error && (
-            <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
-              {error}
-            </p>
-          )}
-
-          <Button type="submit" disabled={loading} className="w-full bg-white text-black hover:bg-zinc-200">
-            {loading ? "Signing in..." : "Sign In"}
-          </Button>
-        </form>
-
-        <p className="text-center text-xs text-zinc-500">
-          Don&apos;t have an account?{" "}
-          <Link href="/auth/register" className="text-zinc-300 hover:text-white underline">
-            Create one
+    <main className="flex min-h-screen flex-col">
+      <header className="border-b border-border">
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 font-semibold">
+            <BrainCircuit className="w-5 h-5 text-blue-500" />
+            InterviewIQ
           </Link>
-        </p>
+          <ThemeToggle />
+        </div>
+      </header>
+
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-sm space-y-6">
+          <div className="text-center space-y-1">
+            <h1 className="text-2xl font-bold">Welcome back</h1>
+            <p className="text-sm text-muted-foreground">Sign in to your account</p>
+          </div>
+
+          <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Email</label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full px-3 py-2.5 rounded-lg bg-background border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Password</label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-3 py-2.5 rounded-lg bg-background border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors"
+                />
+              </div>
+
+              {error && (
+                <p className="text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-60"
+              >
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {loading ? "Signing in..." : "Sign In"}
+              </button>
+            </form>
+          </div>
+
+          <p className="text-center text-xs text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            <Link href="/auth/register" className="text-foreground hover:underline font-medium">
+              Create one
+            </Link>
+          </p>
+        </div>
       </div>
     </main>
   );

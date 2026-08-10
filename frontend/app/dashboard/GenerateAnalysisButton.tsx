@@ -2,9 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Zap } from "lucide-react";
+import { Loader2, Zap, RefreshCw } from "lucide-react";
 
-export default function GenerateAnalysisButton({ userId, hasAnalysis }: { userId: string, hasAnalysis: boolean }) {
+export default function GenerateAnalysisButton({
+  userId,
+  hasAnalysis,
+}: {
+  userId: string;
+  hasAnalysis: boolean;
+}) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -16,10 +22,8 @@ export default function GenerateAnalysisButton({ userId, hasAnalysis }: { userId
     try {
       const response = await fetch("http://127.0.0.1:8000/analysis/generate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ user_id: userId })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId }),
       });
 
       if (!response.ok) {
@@ -27,9 +31,8 @@ export default function GenerateAnalysisButton({ userId, hasAnalysis }: { userId
         throw new Error(errorData.detail || "Failed to generate analysis");
       }
 
-      router.refresh(); 
+      router.refresh();
     } catch (err: any) {
-      console.error(err);
       setError(err.message || "Something went wrong.");
     } finally {
       setIsGenerating(false);
@@ -37,29 +40,34 @@ export default function GenerateAnalysisButton({ userId, hasAnalysis }: { userId
   };
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-start gap-1">
       <button
         onClick={handleGenerate}
         disabled={isGenerating}
-        className={`flex items-center gap-2 px-6 py-3 font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-          hasAnalysis 
-            ? "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 text-sm" 
-            : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-900/20"
+        className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+          hasAnalysis
+            ? "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+            : "bg-primary text-primary-foreground hover:bg-primary/90"
         }`}
       >
         {isGenerating ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
-            Running AI Gap Analysis...
+            Analyzing...
+          </>
+        ) : hasAnalysis ? (
+          <>
+            <RefreshCw className="w-4 h-4" />
+            Regenerate
           </>
         ) : (
           <>
             <Zap className="w-4 h-4" />
-            {hasAnalysis ? "Regenerate Analysis" : "Generate Gap Analysis & Readiness Score"}
+            Generate Gap Analysis
           </>
         )}
       </button>
-      {error && <p className="text-red-400 text-xs mt-2 text-center">{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

@@ -2,11 +2,12 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Upload, Loader2, CheckCircle } from "lucide-react";
 
 export default function ResumeUpload({ userId }: { userId: string }) {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successData, setSuccessData] = useState<any>(null);
+  const [success, setSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -21,7 +22,7 @@ export default function ResumeUpload({ userId }: { userId: string }) {
 
     setIsUploading(true);
     setError(null);
-    setSuccessData(null);
+    setSuccess(false);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -33,28 +34,20 @@ export default function ResumeUpload({ userId }: { userId: string }) {
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to upload resume. Please try again.");
-      }
+      if (!response.ok) throw new Error("Failed to upload resume. Please try again.");
 
-      const data = await response.json();
-      console.log("Resume parsed successfully:", data);
-      setSuccessData(data);
-      router.refresh(); // Refresh the page to show the new data!
+      setSuccess(true);
+      router.refresh();
     } catch (err: any) {
-      console.error(err);
       setError(err.message || "An unexpected error occurred.");
     } finally {
       setIsUploading(false);
-      // Reset input so they can upload again if needed
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   return (
-    <div className="flex flex-col items-center space-y-4">
+    <div className="flex flex-col items-center gap-3">
       <input
         type="file"
         accept="application/pdf"
@@ -62,24 +55,33 @@ export default function ResumeUpload({ userId }: { userId: string }) {
         ref={fileInputRef}
         onChange={handleFileChange}
       />
-      
+
       <button
         onClick={() => fileInputRef.current?.click()}
         disabled={isUploading}
-        className="inline-block mt-2 px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {isUploading ? "Uploading & Analyzing..." : "Upload Resume →"}
+        {isUploading ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Uploading & Analyzing...
+          </>
+        ) : (
+          <>
+            <Upload className="w-4 h-4" />
+            Upload Resume (PDF)
+          </>
+        )}
       </button>
 
       {error && (
-        <p className="text-red-400 text-sm mt-2">{error}</p>
+        <p className="text-xs text-destructive">{error}</p>
       )}
-
-      {successData && (
-        <div className="text-green-400 text-sm mt-2 text-center">
-          <p>Resume successfully parsed!</p>
-          <p className="text-zinc-500 text-xs mt-1">Check your browser console (F12) for the extracted data.</p>
-        </div>
+      {success && (
+        <p className="flex items-center gap-1.5 text-xs text-green-500">
+          <CheckCircle className="w-3.5 h-3.5" />
+          Resume uploaded and parsed successfully
+        </p>
       )}
     </div>
   );
