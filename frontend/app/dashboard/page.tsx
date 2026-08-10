@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import ResumeUpload from "@/components/ResumeUpload";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   // Server-side auth check — if not logged in, send to login
@@ -50,10 +51,20 @@ export default async function DashboardPage() {
       <div className="max-w-5xl mx-auto w-full px-6 py-12 space-y-8">
         
         {/* Header */}
-        <div className="space-y-1">
-          <p className="text-sm text-zinc-500">Welcome back 👋</p>
-          <h1 className="text-3xl font-bold text-zinc-50">Your Interview Dashboard</h1>
-          <p className="text-zinc-400 text-sm">{user.email}</p>
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <p className="text-sm text-zinc-500">Welcome back 👋</p>
+            <h1 className="text-3xl font-bold text-zinc-50">Your Interview Dashboard</h1>
+            <p className="text-zinc-400 text-sm">{user.email}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/interview" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+              Interview Prep
+            </Link>
+            <Link href="/profile" className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors">
+              Edit Profile
+            </Link>
+          </div>
         </div>
 
         {/* Dashboard Content */}
